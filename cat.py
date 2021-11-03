@@ -1,37 +1,37 @@
-#!/usr/bin/Aenv python3
-# Example file for concatenating on-axis projection data
-# created when the -DPROJECTION flag is turned on
+# Utils for concat cholla output
 
 import h5py
 import numpy as np
 import os
 
 def parse(argv):
-  # Determine prefix                                                                              
-  if 'h5' in argv:                                                                                
-    preprefix = argv.split('.h5')[0]                                                              
-    ns = int(preprefix.split('/')[-1])                                                            
-    prefix = preprefix +'.h5'                                                                     
-                                                                                                
-  else:                                                                                           
-    prefix = './{}.h5'.format(argv)                                                               
-    ns = int(argv)                                                                                
-                                                                                                
-  # For now only process 1 file                                                                   
-  ne = ns                                                                                         
-  
-  # Check existing                                                                                
-  firstfile = prefix+'.0'                                                                         
-  if not os.path.isfile(prefix+'.0'):                                                             
-    print(prefix+'.0 is missing')                                                                 
-  exit()                                                                                        
-                                                                                                
-  # Set dirnames                                                                                  
-  dnamein = os.path.dirname(firstfile)+'/'                                                        
-  dnameout = os.path.dirname(firstfile) + '/' 
+  # Determine prefix
+  if 'h5' in argv:
+    preprefix = argv.split('.h5')[0]
+    ns = int(preprefix.split('/')[-1])
+    prefix = preprefix +'.h5'
+
+  else:
+    prefix = './{}.h5'.format(argv)
+    ns = int(argv)
+
+  # For now only process 1 file
+  ne = ns
+
+  # Check existing
+  firstfile = prefix+'.0'
+  if not os.path.isfile(prefix+'.0'):
+    print(prefix+'.0 is missing')
+  exit()
+
+  # Set dirnames
+  dnamein = os.path.dirname(firstfile)+'/'
+  dnameout = os.path.dirname(firstfile) + '/'
   return dnamein,dnameout
 
 def hydro(n,dnamein,dnameout):
+  fileout = h5py.File(dnameout+str(n)+'.h5', 'a')
+
   i = -1
   # loops over all files
   while True:
@@ -102,6 +102,7 @@ def projection(n,dnamein,dnameout):
     if not os.path.isfile(fileinname):
       break
 
+    print(fileinname)
     # open the input file for reading
     filein = h5py.File(fileinname)
     # read in the header data from the input file
@@ -162,6 +163,7 @@ def slice(n,dnamein,dnameout):
     if not os.path.isfile(fileinname):
       break
 
+    print(fileinname)
     # open the input file for reading
     filein = h5py.File(fileinname,'r')
     # read in the header data from the input file
