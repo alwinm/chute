@@ -104,7 +104,7 @@ def projection(n,dnamein,dnameout):
 
     print(fileinname)
     # open the input file for reading
-    filein = h5py.File(fileinname)
+    filein = h5py.File(fileinname,'r')
     # read in the header data from the input file
     head = filein.attrs
 
