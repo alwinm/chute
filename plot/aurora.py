@@ -1,27 +1,45 @@
+import os
 import numpy as n
 import h5py
 import matplotlib.colors as mco
 import pylab as p
-def panel(array):
-    p.pcolormesh(array.transpose(),norm=mco.LogNorm())
-    p.colorbar()
 
-def plot(i):
+
+def plot(i,log_bool=True,field='d'):
+    def panel(array):
+        if array is None:
+            return
+        norm0 = None
+        if log_bool:
+            norm0 = mco.LogNorm()
+
+        vmax = n.max(array)
+        vmin = 1e-10 * vmax
+        p.pcolormesh(array.transpose(),norm=norm0,vmin=vmin,vmax=vmax) 
+        p.colorbar()
+
+    def get(hf,key):
+        if key in hf:
+            return hf[key][:]
+        else:
+            return None
+    
     slicefile = str(i)+'_slice.h5'
     projfile = str(i)+'_proj.h5'
 
-    with h5py.File(projfile,'r') as pfile:
-        p_xy = pfile['d_xy'][:]
-        p_xz = pfile['d_xz'][:]
-
-
-    with h5py.File(slicefile,'r') as sfile:
-        s_xy = sfile['d_xy'][:]
-        s_xz = sfile['d_xz'][:]
-        s_yz = sfile['d_yz'][:]
-
-    sfile = h5py.File(slicefile,'r')
+    p_xy = p_xz = s_xy = s_xz = s_yz = None
     
+    if os.path.isfile(projfile):
+        with h5py.File(projfile,'r') as pfile:
+            p_xy = get(pfile,field+'_xy')
+            p_xz = get(pfile,field+'_xz')
+
+    if os.path.isfile(slicefile):        
+        with h5py.File(slicefile,'r') as sfile:
+            s_xy = get(sfile,field+'_xy')
+            s_xz = get(sfile,field+'_xz')
+            s_yz = get(sfile,field+'_yz')
+        
     nh = 2
     nw = 3
     ni = 1
@@ -58,10 +76,13 @@ def plot(i):
     p.ylabel('Z')
 
 
-
-
-    
-    p.savefig(f'aurora{i:03d}.png')
+    savefile = f'aurora_Field{field}_Log{log_bool}_{i:03d}.png'
+    print('Saving:',savefile)
+    p.savefig(savefile)
+    #if log_bool:
+    #    p.savefig(f'aurora_{i:03d}.png')
+    #else:
+    #    p.savefig(f'boreal_{i:03d}.png')
     
 
 

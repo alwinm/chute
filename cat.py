@@ -41,7 +41,7 @@ def hydro(n,dnamein,dnameout):
 
     if not os.path.isfile(fileinname):
       break
-    print('Load:',fileinname)
+    print('Load:',fileinname,flush=True)
 
     # open the input file for reading
     filein = h5py.File(fileinname,'r')
