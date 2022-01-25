@@ -8,21 +8,16 @@ def parse(argv):
   # Determine prefix
   if 'h5' in argv:
     preprefix = argv.split('.h5')[0]
-    ns = int(preprefix.split('/')[-1])
     prefix = preprefix +'.h5'
 
   else:
     prefix = './{}.h5'.format(argv)
-    ns = int(argv)
-
-  # For now only process 1 file
-  ne = ns
 
   # Check existing
   firstfile = prefix+'.0'
-  if not os.path.isfile(prefix+'.0'):
-    print(prefix+'.0 is missing')
-  exit()
+  if not os.path.isfile(firstfile):
+    print(firstfile,' is missing')
+    exit()
 
   # Set dirnames
   dnamein = os.path.dirname(firstfile)+'/'
@@ -45,11 +40,9 @@ def hydro(n,dnamein,dnameout):
 
     # open the input file for reading
     filein = h5py.File(fileinname,'r')
+
     # read in the header data from the input file
     head = filein.attrs
-
-    # Detect DE
-    DE = 'GasEnergy' in filein
 
     # if it's the first input file, write the header attributes
     # and create the datasets in the output file
@@ -67,12 +60,12 @@ def hydro(n,dnamein,dnameout):
 y_unit']
       for unit in units:
         fileout.attrs[unit] = [head[unit][0]]
-      keys = ['density','momentum_x','momentum_y','momentum_z','Energy','GasEnergy']
+      keys = filein.keys()
+      #['density','momentum_x','momentum_y','momentum_z','Energy','GasEnergy','scalar0']
 
       for key in keys:
-        if key in filein:
-          if key not in fileout:
-            fileout.create_dataset(key, (nx, ny, nz), chunks=(200,200,1))
+        if key not in fileout:
+          fileout.create_dataset(key, (nx, ny, nz), chunks=(32,32,32))
 
     # write data from individual processor file to
     # correct location in concatenated file
@@ -86,7 +79,8 @@ y_unit']
       if key in filein:
         fileout[key][xs:xs+nxl,ys:ys+nyl,zs:zs+nzl] = filein[key]
     filein.close()
-
+    
+  # end loop over all files
   fileout.close()
 
 
