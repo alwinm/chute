@@ -60,12 +60,13 @@ def hydro(n,dnamein,dnameout):
 y_unit']
       for unit in units:
         fileout.attrs[unit] = [head[unit][0]]
-      keys = filein.keys()
+      keys = list(filein.keys())
       #['density','momentum_x','momentum_y','momentum_z','Energy','GasEnergy','scalar0']
 
       for key in keys:
         if key not in fileout:
-          fileout.create_dataset(key, (nx, ny, nz), chunks=(32,32,32))
+          fileout.create_dataset(key, (nx, ny, nz), chunks=(128,128,128))
+          #fileout.create_dataset(key, (nx, ny, nz))
 
     # write data from individual processor file to
     # correct location in concatenated file
@@ -79,7 +80,7 @@ y_unit']
       if key in filein:
         fileout[key][xs:xs+nxl,ys:ys+nyl,zs:zs+nzl] = filein[key]
     filein.close()
-    
+
   # end loop over all files
   fileout.close()
 
@@ -269,3 +270,78 @@ def slice(n,dnamein,dnameout):
 
   fileout.close()
   return
+
+def rot_proj(n,dnamein,dnameout):
+  fileout = h5py.File(dnameout+str(n)+'_rot_proj.h5', 'w')
+  i = -1
+  
+  while True:
+  # loop over files for a given output time
+    i += 1
+    fileinname = dnamein+str(n)+'_rot_proj.h5.'+str(i)
+    if not os.path.isfile(fileinname):
+      break
+
+    print(fileinname)
+
+    filein = h5py.File(dnamein+fileinname,'r')
+    head = filein.attrs
+    # if it's the first input file, write the header attributes
+    # and create the arrays to hold the output data
+    if (i == 0):
+
+      nxr = int(head['nxr'])
+      nzr = int(head['nzr'])
+      Lx = head['Lx']
+      Lz = head['Lz']
+      delta = head['delta']
+      theta = head['theta']
+      phi = head['phi']
+      gamma = head['gamma']
+      t = head['t']
+      dt = head['dt']
+      n_step = head['n_step']
+      fileout.attrs['nxr'] = nxr
+      fileout.attrs['nzr'] = nzr
+      fileout.attrs['Lx'] = Lx
+      fileout.attrs['Lz'] = Lz
+      fileout.attrs['delta'] = delta
+      fileout.attrs['theta'] = theta
+      fileout.attrs['phi'] = phi
+      fileout.attrs['gamma'] = gamma
+      fileout.attrs['t'] = t
+      fileout.attrs['dt'] = dt
+      fileout.attrs['n_step'] = n_step
+
+      d_xzr  = np.zeros((nxr, nzr))
+      vx_xzr = np.zeros((nxr, nzr))
+      vy_xzr = np.zeros((nxr, nzr))
+      vz_xzr = np.zeros((nxr, nzr))
+      T_xzr  = np.zeros((nxr, nzr))
+
+    # end first input file
+    
+    # write data from individual processor file to
+    # correct location in concatenated file
+    nx_min = int(head['nx_min'])
+    nx_max = int(head['nx_max'])
+    nz_min = int(head['nz_min'])
+    nz_max = int(head['nz_max'])
+
+    d_xzr[nx_min:nx_max,nz_min:nz_max]  += filein['d_xzr'][:]
+    vx_xzr[nx_min:nx_max,nz_min:nz_max] += filein['vx_xzr'][:]
+    vy_xzr[nx_min:nx_max,nz_min:nz_max] += filein['vy_xzr'][:]
+    vz_xzr[nx_min:nx_max,nz_min:nz_max] += filein['vz_xzr'][:]
+    T_xzr[nx_min:nx_max,nz_min:nz_max]  += filein['T_xzr'][:]
+
+    filein.close()
+  # end while loop
+  
+  # write out the new datasets
+  fileout.create_dataset("d_xzr", data=d_xzr)
+  fileout.create_dataset("vx_xzr", data=vx_xzr)
+  fileout.create_dataset("vy_xzr", data=vy_xzr)
+  fileout.create_dataset("vz_xzr", data=vz_xzr)
+  fileout.create_dataset("T_xzr", data=T_xzr)
+
+  fileout.close()
