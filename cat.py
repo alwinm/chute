@@ -50,6 +50,9 @@ def hydro(n,dnamein,dnameout):
       nx = head['dims'][0]
       ny = head['dims'][1]
       nz = head['dims'][2]
+      nxl = head['dims_local'][0]
+      nyl = head['dims_local'][1]
+      nzl = head['dims_local'][2]
       fileout.attrs['dims'] = [nx, ny, nz]
       fileout.attrs['gamma'] = [head['gamma'][0]]
       fileout.attrs['t'] = [head['t'][0]]
@@ -65,7 +68,14 @@ y_unit']
 
       for key in keys:
         if key not in fileout:
-          fileout.create_dataset(key, (nx, ny, nz), chunks=(128,128,128))
+          # WARNING: If you don't set dataset dtype it will default to 32-bit, but CHOLLA likes to be 64-bit
+          dtype = filein[key].dtype
+          if nz > 1:
+            fileout.create_dataset(key, (nx, ny, nz), chunks=(nxl,nyl,nzl), dtype=dtype)
+          elif ny > 1:
+            fileout.create_dataset(key, (nx, ny), chunks=(nxl,nyl), dtype=dtype)
+          elif nx > 1:
+            fileout.create_dataset(key, (nx,), chunks=(nxl,), dtype=dtype)
           #fileout.create_dataset(key, (nx, ny, nz))
 
     # write data from individual processor file to
@@ -78,7 +88,12 @@ y_unit']
     zs = head['offset'][2]
     for key in keys:
       if key in filein:
-        fileout[key][xs:xs+nxl,ys:ys+nyl,zs:zs+nzl] = filein[key]
+        if nz > 1:
+          fileout[key][xs:xs+nxl,ys:ys+nyl,zs:zs+nzl] = filein[key]
+        elif ny > 1:
+          fileout[key][xs:xs+nxl,ys:ys+nyl] = filein[key]
+        elif nx > 1:
+          fileout[key][xs:xs+nxl] = filein[key]
     filein.close()
 
   # end loop over all files
