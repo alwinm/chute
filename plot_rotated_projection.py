@@ -6,18 +6,24 @@ matplotlib.rcParams['mathtext.default']='regular'
 import matplotlib.pyplot as plt
 from matplotlib.colors import hsv_to_rgb
 import matplotlib.cm as cm
-from mpi4py import MPI
-from sys import exit
+import sys
+import os
 from chute.rotate_box import rotate_box
 
+'''
+from mpi4py import MPI
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
 
 istart = rank+0
 iend   = rank+0
-dnamein='./hdf5/'
-dnameout='./rotated_projections/'
+'''
+dnamein='./'
+dnameout='./plot/'
+
+if not os.path.isdir(dnameout):
+  os.mkdir(dnameout)
 
 # some constants
 l_s = 3.086e21 # length scale, centimeters in a kiloparsec
@@ -32,15 +38,19 @@ G = G / l_s**3 * m_s * t_s**2 # in kpc^3 / M_sun / kyr^2
 KB = 1.3806e-16 # boltzmann constant in cm^2 g / s^2 K
 v_to_kmps = l_s/t_s/100000
 kmps_to_kpcpkyr = 1.0220122e-6
+
 pscale=2048./10.
 fsize=pscale/2.
 lwidth=12
-fontpath='/ccs/home/evans/.fonts/Helvetica.ttf'
-helvetica=matplotlib.font_manager.FontProperties(size=fsize,fname=fontpath)
+#fontpath='/ccs/home/evans/.fonts/Helvetica.ttf'
+helvetica=matplotlib.font_manager.FontProperties(size=fsize)#,fname=fontpath)
 
-for i in range(istart,iend+1):
-  
-  f = h5py.File(dnamein+str(i)+'_rot_proj.h5', 'r')
+def process(i):
+  filename = dnamein+str(i)+'_rot_proj.h5'
+  if not os.path.isfile(filename):
+    sys.exit()
+  print(filename)
+  f = h5py.File(filename,'r')
   head = f.attrs
   t = head['t']
   nx = head['nxr']
@@ -164,3 +174,8 @@ for i in range(istart,iend+1):
   plt.savefig(dnameout+'T_rot_'+str(i)+'.png', dpi=100)
   plt.close(fig)
 
+
+i = 0
+while True:
+  process(i)
+  i += 1
