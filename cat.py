@@ -4,6 +4,8 @@ import h5py
 import numpy as np
 import os
 
+verbose = True
+
 def parse(argv):
   # Determine prefix
   if 'h5' in argv:
@@ -111,8 +113,9 @@ def projection(n,dnamein,dnameout):
 
     if not os.path.isfile(fileinname):
       break
-
-    print(fileinname)
+    
+    if verbose:
+      print(fileinname)
     # open the input file for reading
     filein = h5py.File(fileinname,'r')
     # read in the header data from the input file
@@ -173,7 +176,8 @@ def slice(n,dnamein,dnameout):
     if not os.path.isfile(fileinname):
       break
 
-    print(fileinname)
+    if verbose:
+      print(fileinname)
     # open the input file for reading
     filein = h5py.File(fileinname,'r')
     # read in the header data from the input file
@@ -297,7 +301,8 @@ def rot_proj(n,dnamein,dnameout):
     if not os.path.isfile(fileinname):
       break
 
-    print(fileinname)
+    if verbose:
+      print(fileinname)
 
     filein = h5py.File(dnamein+fileinname,'r')
     head = filein.attrs
