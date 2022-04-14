@@ -68,7 +68,8 @@ def processblock(f,center,dx,rbins,x,y,z):
     masks['hot'] = (density > 0) & (temperature > 2e4)
 
     values_cgs = {}
-    values_cgs['density'] = density * density_unit_cgs
+    density_cgs = density * density_unit_cgs         
+    values_cgs['density'] = density_cgs
     values_cgs['cooling'] = cie_cool(density_cgs,temperature)
     values_cgs['energy_density'] = gase * energy_density_unit_cgs
 
