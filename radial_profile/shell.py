@@ -72,7 +72,8 @@ def processblock(f,center,dx,rbins,x,y,z):
     values_cgs['density'] = density_cgs
     values_cgs['cooling'] = cie_cool(density_cgs,temperature)
     values_cgs['energy_density'] = gase * energy_density_unit_cgs
-
+    values_cgs['cells'] = 1.0
+    
     # Compute distance
     centerx,centery,centerz = center
     cx = (dx*(n.arange(xmin,xmax) - centerx))**2
@@ -83,7 +84,7 @@ def processblock(f,center,dx,rbins,x,y,z):
     output = {}
     for key1 in values_cgs:
         for key2 in masks:
-            output[key1+'_'+key2] = n.histogram(distance,bins=rbins,weights=values_cgs[key1][masks[key2]])
+            output[key1+'_'+key2] = n.histogram(distance,bins=rbins,weights=values_cgs[key1]*masks[key2])
     return output
 
 def process(filename,center,dx,rbins):
