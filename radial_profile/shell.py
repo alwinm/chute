@@ -24,7 +24,7 @@ def cie_cool(rho,t):
 
     mask = (lt >= 7.4)
     if n.any(mask):
-        result[mask] = 10**(0.45*lt - 26.065)
+        result[mask] = 10**(0.45*lt[mask] - 26.065)
 
     return rho*rho*result
 
@@ -52,8 +52,8 @@ def processblock(f,center,dx,rbins,x,y,z):
     maxs = [xmax,ymax,zmax]
     select = tuple((slice(xmin,xmax),slice(ymin,ymax),slice(zmin,zmax)))
 
-    density = f['density'][select]
-    gase = f['GasEnergy'][select]
+    density = f['density'][select].reshape(-1)
+    gase = f['GasEnergy'][select].reshape(-1)
     raw_temp = gase/density
 
     # Compute temperature conversion
@@ -72,18 +72,19 @@ def processblock(f,center,dx,rbins,x,y,z):
     values_cgs['density'] = density_cgs
     values_cgs['cooling'] = cie_cool(density_cgs,temperature)
     values_cgs['energy_density'] = gase * energy_density_unit_cgs
-
+    values_cgs['cells'] = 1.0
+    
     # Compute distance
     centerx,centery,centerz = center
     cx = (dx*(n.arange(xmin,xmax) - centerx))**2
     cy = (dx*(n.arange(ymin,ymax) - centery))**2
     cz = (dx*(n.arange(zmin,zmax) - centerz))**2
-    distance = n.sqrt(cx[:,None,None] + cy[None,:,None] + cz[None,None,:])
+    distance = n.sqrt(cx[:,None,None] + cy[None,:,None] + cz[None,None,:]).reshape(-1)
 
     output = {}
     for key1 in values_cgs:
         for key2 in masks:
-            output[key1+'_'+key2] = n.histogram(radius,bins=rbins,weights=values_cgs[key1][masks[key2]])
+            output[key1+'_'+key2] = n.histogram(distance,bins=rbins,weights=values_cgs[key1]*masks[key2])
     return output
 
 def process(filename,center,dx,rbins):
