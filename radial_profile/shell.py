@@ -52,8 +52,8 @@ def processblock(f,center,dx,rbins,x,y,z):
     maxs = [xmax,ymax,zmax]
     select = tuple((slice(xmin,xmax),slice(ymin,ymax),slice(zmin,zmax)))
 
-    density = f['density'][select].reshape(-1)
-    gase = f['GasEnergy'][select].reshape(-1)
+    density = f['density'][select]#.reshape(-1)
+    gase = f['GasEnergy'][select]#.reshape(-1)
     raw_temp = gase/density
 
     # Compute temperature conversion
@@ -62,10 +62,6 @@ def processblock(f,center,dx,rbins,x,y,z):
     kelvin = 1.15831413e14 # proton mass * (kpc/kyr)^2 / boltzmann constant
     tconvert = (mu*(gamma-1.0)*kelvin)
     temperature = raw_temp * tconvert
-
-    masks = {}
-    masks['cold'] = (density > 0) & (temperature < 2e4)
-    masks['hot'] = (density > 0) & (temperature > 2e4)
 
     values_cgs = {}
     density_cgs = density * density_unit_cgs         
@@ -79,7 +75,18 @@ def processblock(f,center,dx,rbins,x,y,z):
     cx = (dx*(n.arange(xmin,xmax) - centerx))**2
     cy = (dx*(n.arange(ymin,ymax) - centery))**2
     cz = (dx*(n.arange(zmin,zmax) - centerz))**2
-    distance = n.sqrt(cx[:,None,None] + cy[None,:,None] + cz[None,None,:]).reshape(-1)
+    distance = n.sqrt(cx[:,None,None] + cy[None,:,None] + cz[None,None,:])#.reshape(-1)
+
+    masks = {}
+    above = (cz[None,None,:] > 1)
+    polar = (cz[None,None,:] > n.sqrt(3)*(cx[:,None,None] + cy[None,:,None]))
+    masks['cold'] = above & (density > 0) & (temperature < 2e4)
+    masks['hot'] = above & (density > 0) & (temperature > 5e5)
+    masks['cold_polar'] = masks['cold'] & polar
+    masks['hot_polar'] = masks['hot'] & polar
+    
+
+
 
     output = {}
     for key1 in values_cgs:
@@ -105,4 +112,5 @@ def process(filename,center,dx,rbins):
                 result[key] = output[key]
             else:
                 result[key] += output[key]
+    result['distance'] = rbins
     return result
