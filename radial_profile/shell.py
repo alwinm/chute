@@ -3,8 +3,27 @@
 import h5py
 import numpy as n
 import itertools
+import time
+import resource
 
-size = 1024
+
+
+size = 512
+
+time.t0 = time.time()
+
+def timer(string):
+    t = time.time()
+    dt = t - time.t0
+    print(string,dt,flush=True)
+    mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    print(f'{mem}KB\n{mem/1024}MB\n{mem/1024/1024}GB',flush=True)
+    time.t0 = t
+    return dt
+
+def mem():
+    mem = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    print(f'{mem}KB\n{mem/1024}MB\n{mem/1024/1024}GB',flush=True)
 
 def cie_cool(rho,t):
     # dE_cgs = cool * dt * TIME_UNIT
@@ -64,12 +83,12 @@ def processblock(f,center,dx,rbins,x,y,z):
     temperature = raw_temp * tconvert
 
     values_cgs = {}
-    density_cgs = density * density_unit_cgs         
+    density_cgs = density * density_unit_cgs
     values_cgs['density'] = density_cgs
     values_cgs['cooling'] = cie_cool(density_cgs,temperature)
     values_cgs['energy_density'] = gase * energy_density_unit_cgs
     values_cgs['cells'] = 1.0
-    
+
     # Compute distance
     centerx,centery,centerz = center
     cx = (dx*(n.arange(xmin,xmax) - centerx))**2
@@ -84,14 +103,14 @@ def processblock(f,center,dx,rbins,x,y,z):
     masks['hot'] = above & (density > 0) & (temperature > 5e5)
     masks['cold_polar'] = masks['cold'] & polar
     masks['hot_polar'] = masks['hot'] & polar
-    
+
 
 
 
     output = {}
     for key1 in values_cgs:
         for key2 in masks:
-            output[key1+'_'+key2] = n.histogram(distance,bins=rbins,weights=values_cgs[key1]*masks[key2])
+            output[key1+'_'+key2] = n.histogram(distance,bins=rbins,weights=values_cgs[key1]*masks[key2])[0]
     return output
 
 def process(filename,center,dx,rbins):
@@ -105,8 +124,10 @@ def process(filename,center,dx,rbins):
     zl = int((mastershape[2]+size-1)/size)
 
     result = {}
+    timer('Init')
     for x,y,z in itertools.product(range(xl),range(yl),range(zl)):
         output = processblock(f,center,dx,rbins,x,y,z)
+        timer('Block: {} {} {} Seconds: '.format(x,y,z))
         for key in output:
             if key not in result:
                 result[key] = output[key]
