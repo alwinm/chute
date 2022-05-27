@@ -16,13 +16,15 @@ def timer(string):
     print(string,time.time() - time.t0,' seconds')
     time.t0 = time.time()
 
+def printf(*args,**kwargs):
+    print(*args,**kwargs,flush=True)
 
 def make_nompi():
     # creates the make type nompi if it does not exist
     infile = 'builds/make.type.hydro'
     outfile = 'builds/make.type.nompi'
-    if os.path.isfile(outfile):
-        return
+    #if os.path.isfile(outfile):
+    #    return
 
     with open(infile,'r') as ofile:
         data = ofile.readlines()
@@ -32,6 +34,41 @@ def make_nompi():
             if 'MPI_CHOLLA' not in line:
                 ofile.write(line)
 
+def make_ctu():
+    # creates the make type ctu if it does not exist
+    infile = 'builds/make.type.hydro'
+    outfile = 'builds/make.type.ctu'
+    #if os.path.isfile(outfile):
+    #    return
+
+    with open(infile,'r') as ofile:
+        data = ofile.readlines()
+
+    with open(outfile,'w') as ofile:
+        for line in data:
+            if 'VL' not in line:
+                ofile.write(line)
+            else:
+                ofile.write(line.replace('VL','CTU'))
+
+def make_simple():
+    # creates the make type ctu if it does not exist
+    infile = 'builds/make.type.hydro'
+    outfile = 'builds/make.type.simple'
+    #if os.path.isfile(outfile):
+    #    return
+
+    with open(infile,'r') as ofile:
+        data = ofile.readlines()
+
+    with open(outfile,'w') as ofile:
+        for line in data:
+            if 'VL' not in line:
+                ofile.write(line)
+            else:
+                ofile.write(line.replace('VL','SIMPLE'))
+
+
 def compile_cholla():
     # compile hydro and nompi, store binaries under temp/
     if not os.path.isdir('temp'):
@@ -39,13 +76,18 @@ def compile_cholla():
 
     make_nompi()
 
-    os.system('make clean')
-    os.system('make -j TYPE=hydro')
-    os.system('mv bin/* temp/.')
+    make_ctu()
+    
+    make_simple()
+    
+    for typename in ['hydro','nompi','ctu','simple']:
+        os.system('make clean')
+        os.system('make -j TYPE={}'.format(typename))
+        os.system('mv bin/* temp/.')
 
-    os.system('make clean')
-    os.system('make -j TYPE=nompi')
-    os.system('mv bin/* temp/.')
+    #os.system('make clean')
+    #os.system('make -j TYPE=nompi')
+    #os.system('mv bin/* temp/.')
 
 tests1d = [
 ['/1D/Creasey_shock.txt','tout=30.0 outstep=30.0','creasey'],
@@ -79,10 +121,21 @@ def run_test(binary,odir,test):
         os.system('mkdir -p ' + outdir)
     command = f'{binary} {pdir}{test[0]} {test[1]} outdir={odir}/{test[2]}/'
 
-    print(command)
+    printf(command)
     os.system(command)
 
+def short_test():
+    if not os.path.isdir('temp'):
+        compile_cholla()    
 
+    os.system('make clean')
+    os.system('make -j')
+
+
+    bins = os.listdir('bin')
+    hydro_match = [string for string in bins if 'hydro' in string]
+    for test in tests:
+        run_test(f'bin/{hydro_match[0]}','out_hydro',test)
 
 def run_tests():
     # single nompi
@@ -93,19 +146,32 @@ def run_tests():
 
     bins = os.listdir('temp')
 
-
+    # 1 gpu nompi
+    '''
     nompi_match = [string for string in bins if 'nompi' in string]
     if not nompi_match:
         return
     for test in tests:
         run_test(f'temp/{nompi_match[0]}','out_nompi',test)
+    '''
+
+    # 1 gpu ctu
+    for typename in ['ctu','simple','nompi']:
+        match = [string for string in bins if typename in string]
+        if not match:
+            continue
+        for test in tests:
+            run_test(f'temp/{match[0]}','out_'+typename,test)
 
     hydro_match = [string for string in bins if 'hydro' in string]
     if not hydro_match:
         return
+
+    # 1 gpu mpi
     for test in tests:
         run_test(f'temp/{hydro_match[0]}','out_hydro',test)
 
+    # multi-gpu mpi
     for test in tests1d:
         run_test(f'mpirun -np 2 temp/{hydro_match[0]}','out_mpi',test)
 
@@ -114,6 +180,8 @@ def run_tests():
 
     for test in tests3d:
         run_test(f'mpirun -np 8 temp/{hydro_match[0]}','out_mpi',test)
+
+
 
 def cat():
     # loop through out_mpi directories and concatenate as appropriate
@@ -134,15 +202,15 @@ def compare(dir1,dir2,filename):
     if not os.path.isfile(f1):
         f1 += '.0'
     if not os.path.isfile(f2):
-        print(f2,' missing')
+        printf(f2,' missing')
         return 
     if not os.path.isfile(f1):
-        print(f1,' missing')
+        printf(f1,' missing')
         return
     command = 'h5diff {} {}'.format(f1,f2)
     colorcommand = 'h5diff {}{}{}{} {}{}{}{}'.format(OKCYAN,dir1,ENDC,filename,OKCYAN,dir2,ENDC,filename)
-    print(command)
-    print(colorcommand)
+    printf(command)
+    printf(colorcommand)
     os.system(command)
 
 def hdiff():
@@ -153,28 +221,38 @@ def hdiff():
         hydro_dir = f'out_hydro/{test[2]}/'
         mpi_dir = f'out_mpi/{test[2]}/'
         for filename in os.listdir(nompi_dir):
-            print('='*40)
+            printf('='*40)
             compare(nompi_dir,hydro_dir,filename)
             compare(nompi_dir,mpi_dir,filename)
             compare(hydro_dir,mpi_dir,filename)
 
 def repodiff(dir1,dir2):
-    for out in ['nompi','hydro','mpi']:
+    for out in ['nompi','hydro','mpi','ctu','simple']:
         for test in tests:
             _dir1 = '{}/out_{}/{}/'.format(dir1,out,test[2])
             _dir2 = '{}/out_{}/{}/'.format(dir2,out,test[2])
+            
+            if not os.path.isdir(_dir1):
+                continue
+
             for filename in os.listdir(_dir1):
-                print('='*40)
+                printf('='*40)
                 compare(_dir1,_dir2,filename)
 
     
 
 if 'rebuild' in sys.argv:
     os.remove('builds/make.type.nompi')
+    os.remove('builds/make.type.ctu')
+    os.remove('builds/make.type.simple')
     compile_cholla()
     exit()
 if 'compile' in sys.argv:
     compile_cholla()
+    exit()
+
+if 'run' in sys.argv:
+    run_tests()
     exit()
 
 if 'cat' in sys.argv:
@@ -186,18 +264,22 @@ if 'hdiff' in sys.argv:
     exit()
 
 if 'help' in sys.argv:
-    print('rebuild,compile,cat,hdiff,repo')
+    printf('rebuild,compile,run,cat,hdiff,repo,short')
     exit()
 
 if 'repo' in sys.argv:
     repodiff(sys.argv[2],sys.argv[3])
     exit()
+
+if 'short' in sys.argv:
+    short_test()
+    
 # default behavior:
 # runs tests
 # cats tests
 # runs hdiff on tests
 
-run_tests()
-cat()
-hdiff()
+#run_tests()
+#cat()
+#hdiff()
 #timer('run_tests finished:')
