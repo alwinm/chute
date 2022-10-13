@@ -68,6 +68,27 @@ def make_simple():
             else:
                 ofile.write(line.replace('VL','SIMPLE'))
 
+def make_scalar():
+    # creates the make type scalar if it does not exist
+    infile = 'builds/make.type.hydro'
+    outfile = 'builds/make.type.scalar'
+    with open(infile,'r') as ofile:
+        data = ofile.readlines()
+
+    with open(outfile,'w') as ofile:
+
+        for line in data:
+            ofile.write(line)
+        ofile.write('DFLAGS += -DSCALAR \n')
+
+    if not os.path.isdir('temp'):
+        os.mkdir('temp')
+    
+    typename = 'scalar'
+    os.system('make clean')
+    os.system('make -j TYPE={}'.format(typename))
+    os.system('mv bin/* temp/.')        
+
 
 def compile_cholla():
     # compile hydro and nompi, store binaries under temp/
@@ -182,6 +203,18 @@ def run_tests():
         run_test(f'mpirun -np 8 temp/{hydro_match[0]}','out_mpi',test)
 
 
+def run_scalar():
+    make_scalar()
+    bins = os.listdir('temp')
+    typename = 'scalar'
+    match = [string for string in bins if typename in string]
+    if not match:
+        print('NO matching binary for scalar found')
+        return
+
+    for test in tests:                                                                                                                                                                             
+        run_test(f'temp/{match[0]}','out_'+typename,test) 
+
 
 def cat():
     # loop through out_mpi directories and concatenate as appropriate
@@ -211,7 +244,17 @@ def compare(dir1,dir2,filename):
     colorcommand = 'h5diff {}{}{}{} {}{}{}{}'.format(OKCYAN,dir1,ENDC,filename,OKCYAN,dir2,ENDC,filename)
     printf(command)
     printf(colorcommand)
-    os.system(command)
+    output = os.popen(command).readlines()
+    skip = False
+    for line in output:
+        if 'Git Commit Hash' in line:
+            skip = True
+        elif 'Macro Flags' in line:
+            skip = True
+        elif skip:
+            skip = False
+        else:
+            print(line)
 
 def hdiff():
     # internal hdiff check
@@ -239,7 +282,19 @@ def repodiff(dir1,dir2):
                 printf('='*40)
                 compare(_dir1,_dir2,filename)
 
-    
+def repodiff_scalar(dir1,dir2):
+    for out in ['scalar']:
+        for test in tests:
+            _dir1 = '{}/out_{}/{}/'.format(dir1,out,test[2])
+            _dir2 = '{}/out_{}/{}/'.format(dir2,out,test[2])
+            
+            if not os.path.isdir(_dir1):
+                print(_dir1, ' missing directory')
+                continue
+
+            for filename in os.listdir(_dir1):
+                printf('='*40)
+                compare(_dir1,_dir2,filename)    
 
 if 'rebuild' in sys.argv:
     os.remove('builds/make.type.nompi')
@@ -274,6 +329,14 @@ if 'repo' in sys.argv:
 if 'short' in sys.argv:
     short_test()
     
+if 'scalar' in sys.argv:
+    run_scalar()
+
+if 'repo_scalar' in sys.argv:
+    print('repo scalar')
+    repodiff_scalar(sys.argv[2],sys.argv[3])
+
+
 # default behavior:
 # runs tests
 # cats tests
