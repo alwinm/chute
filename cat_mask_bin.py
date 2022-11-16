@@ -23,7 +23,7 @@ def binner(array,binfactor):
 
 
 def hydro_mask_bin(n_file,dnamein,dnameout,double=True,binfactor=1):
-  fileout = h5py.File(dnameout+str(n_file)+'.h5', 'a')
+  fileout = h5py.File(dnameout+str(n_file)+'maskbin.h5', 'a')
 
   i = -1
   # loops over all files
