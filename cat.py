@@ -26,7 +26,7 @@ def parse(argv):
   dnameout = os.path.dirname(firstfile) + '/'
   return dnamein,dnameout
 
-def hydro(n,dnamein,dnameout):
+def hydro(n,dnamein,dnameout,double=True):
   fileout = h5py.File(dnameout+str(n)+'.h5', 'a')
 
   i = -1
@@ -71,7 +71,10 @@ y_unit']
       for key in keys:
         if key not in fileout:
           # WARNING: If you don't set dataset dtype it will default to 32-bit, but CHOLLA likes to be 64-bit
-          dtype = filein[key].dtype
+          if double:
+            dtype = filein[key].dtype
+          else:
+            dtype = None
           if nz > 1:
             fileout.create_dataset(key, (nx, ny, nz), chunks=(nxl,nyl,nzl), dtype=dtype)
           elif ny > 1:
