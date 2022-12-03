@@ -4,6 +4,8 @@ import h5py
 import numpy as np
 import os
 
+verbose = True
+
 def parse(argv):
   # Determine prefix
   if 'h5' in argv:
@@ -24,7 +26,7 @@ def parse(argv):
   dnameout = os.path.dirname(firstfile) + '/'
   return dnamein,dnameout
 
-def hydro(n,dnamein,dnameout):
+def hydro(n,dnamein,dnameout,double=True):
   fileout = h5py.File(dnameout+str(n)+'.h5', 'a')
 
   i = -1
@@ -69,7 +71,10 @@ y_unit']
       for key in keys:
         if key not in fileout:
           # WARNING: If you don't set dataset dtype it will default to 32-bit, but CHOLLA likes to be 64-bit
-          dtype = filein[key].dtype
+          if double:
+            dtype = filein[key].dtype
+          else:
+            dtype = None
           if nz > 1:
             fileout.create_dataset(key, (nx, ny, nz), chunks=(nxl,nyl,nzl), dtype=dtype)
           elif ny > 1:
@@ -111,8 +116,9 @@ def projection(n,dnamein,dnameout):
 
     if not os.path.isfile(fileinname):
       break
-
-    print(fileinname)
+    
+    if verbose:
+      print(fileinname)
     # open the input file for reading
     filein = h5py.File(fileinname,'r')
     # read in the header data from the input file
@@ -173,7 +179,8 @@ def slice(n,dnamein,dnameout):
     if not os.path.isfile(fileinname):
       break
 
-    print(fileinname)
+    if verbose:
+      print(fileinname)
     # open the input file for reading
     filein = h5py.File(fileinname,'r')
     # read in the header data from the input file
@@ -297,7 +304,8 @@ def rot_proj(n,dnamein,dnameout):
     if not os.path.isfile(fileinname):
       break
 
-    print(fileinname)
+    if verbose:
+      print(fileinname)
 
     filein = h5py.File(dnamein+fileinname,'r')
     head = filein.attrs

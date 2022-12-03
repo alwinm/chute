@@ -5,7 +5,7 @@ import matplotlib.colors as mco
 import pylab as p
 
 
-def plot(i,log_bool=True,field='d'):
+def plot(i,log_bool=True,field='d',slicedir='./',projdir='./'):
     def panel(array):
         if array is None:
             return
@@ -24,8 +24,8 @@ def plot(i,log_bool=True,field='d'):
         else:
             return None
     
-    slicefile = str(i)+'_slice.h5'
-    projfile = str(i)+'_proj.h5'
+    slicefile = slicedir+str(i)+'_slice.h5'
+    projfile = projdir+str(i)+'_proj.h5'
 
     p_xy = p_xz = s_xy = s_xz = s_yz = None
     
@@ -75,15 +75,17 @@ def plot(i,log_bool=True,field='d'):
     p.xlabel('X')
     p.ylabel('Z')
 
-
-    savefile = f'aurora_Field{field}_Log{log_bool}_{i:03d}.png'
+    if not os.path.isdir('aurora'):
+        os.mkdir('aurora')
+    
+    savefile = f'aurora/aurora_Field{field}_Log{log_bool}_{i:03d}.png'
     print('Saving:',savefile)
     p.savefig(savefile)
     #if log_bool:
     #    p.savefig(f'aurora_{i:03d}.png')
     #else:
     #    p.savefig(f'boreal_{i:03d}.png')
-    
+    p.close()
 
 
 
