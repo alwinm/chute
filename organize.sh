@@ -16,7 +16,7 @@ mv *proj.h5 proj/.
 mv *proj.h5.* raw_proj/.
 
 mv *slice.h5 slice/.
-mv *slice.h5.* slice/.
+mv *slice.h5.* raw_slice/.
 
 mv *.h5.* raw_grid/.
 mv *.h5 grid/.
