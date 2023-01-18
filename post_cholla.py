@@ -1,36 +1,42 @@
 import os
+import matplotlib
+matplotlib.use('agg')
 import chute.cat as cc
 import chute.plot.aurora as cpa
 
+def mkdir(dirname):
+    if os.path.isdir(dirname):
+        return
+    os.mkdir(dirname)
 def loop(name,function):
     indir = 'raw_' + name + '/'
     outdir = name + '/'
-    i = 0
+    i = -1
     while True:
-        first_file = '{}/{}_{}.h5.0'.format(indir,str(i),name)
+        i += 1
+        first_file = '{}{}_{}.h5.0'.format(indir,str(i),name)
         if not os.path.isfile(first_file):
             break
-        out_file = '{}/{}_{}.h5.0'.format(outdir,str(i),name)
+        out_file = '{}{}_{}.h5'.format(outdir,str(i),name)
         if os.path.isfile(out_file):
             continue
         print(first_file)
         function(i,indir,outdir)
         print(out_file)
-        i += 1
 
 
 
 for name in ['rot_proj','proj','slice']:
     # Make raw and cat dirs
-    os.mkdir('raw_{}'.format(name))
-    os.mkdir(name)
+    mkdir('raw_{}'.format(name))
+    mkdir(name)
     # Move out cats first
     # Then move out raws
     os.system('mv *{}.h5 {}/.'.format(name,name))
     os.system('mv *{}.h5.* raw_{}/.'.format(name,name))    
 
 loop('rot_proj',cc.rot_proj)
-loop('proj',cc.proj)
+loop('proj',cc.projection)
 loop('slice',cc.slice)
 
 def plot_loop():
@@ -44,7 +50,11 @@ def plot_loop():
             return
         if not os.path.isfile(proj_file):
             return
-        cpa.plot(i,log_bool=True,slicedir='./slice/',projdir='./proj/')
+        field = 'd'
+        log_bool=True
+        savefile = f'aurora/aurora_Field{field}_Log{log_bool}_{i:03d}.png'
+        if not os.path.isfile(savefile):
+            cpa.plot(i,log_bool=True,slicedir='./slice/',projdir='./proj/')
         i += 1
 
 plot_loop()
