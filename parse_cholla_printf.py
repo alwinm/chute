@@ -25,23 +25,15 @@ def parse(filename):
 
         if key not in output:
             output[key] = []
-
-        output[key].append(value)
+            
     return output
-
-
-
-
-
-        with open('filename.pickle', 'rb') as handle:
-                b = pickle.load(handle)
-
+        
 def save(filename,data):
     if type(data) == str or type(filename) != str:
         print('Save requires filename first, then data')
         
     with open('filename.pickle', 'wb') as handle:
-        pickle.dump(a, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         
 def load(filename):
