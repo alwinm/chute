@@ -28,7 +28,9 @@ def parse(filename):
         
         if key not in output:
             output[key] = []
-            
+
+        output[key].append(value)
+        
     return output
         
 def save(filename,data):
