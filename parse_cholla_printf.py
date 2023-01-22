@@ -35,12 +35,12 @@ def save(filename,data):
     if type(data) == str or type(filename) != str:
         print('Save requires filename first, then data')
         
-    with open('filename.pickle', 'wb') as handle:
+    with open(filename, 'wb') as handle:
         pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         
 def load(filename):
-    with open('filename.pickle', 'rb') as handle:
+    with open(filename, 'rb') as handle:
         data = pickle.load(handle)
     return data
             
