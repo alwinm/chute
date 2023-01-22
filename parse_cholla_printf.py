@@ -19,7 +19,7 @@ def parse(filename):
 
         if tokens[0] == 'n_step:':
             key = 'timestep'
-        elif tokens[0] == 'Time:':
+        elif tokens[0] == 'Time':
             key = tokens[1]
         else:
             continue
