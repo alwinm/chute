@@ -17,12 +17,15 @@ def parse(filename):
         if len(tokens) <= 7:
             continue
 
-        value = float(tokens[7])
         if tokens[0] == 'n_step:':
             key = 'timestep'
         elif tokens[0] == 'Time:':
             key = tokens[1]
+        else:
+            continue
 
+        value = float(tokens[7])
+        
         if key not in output:
             output[key] = []
             
