@@ -26,7 +26,7 @@ def loop(name,function):
 
 
 
-for name in ['rot_proj','proj','slice']:
+for name in ['rot_proj','proj','slice','particles','grid']:
     # Make raw and cat dirs
     mkdir('raw_{}'.format(name))
     mkdir(name)
@@ -35,6 +35,10 @@ for name in ['rot_proj','proj','slice']:
     os.system('mv *{}.h5 {}/.'.format(name,name))
     os.system('mv *{}.h5.* raw_{}/.'.format(name,name))    
 
+os.system('mv *.h5.* raw_grid/.')
+
+
+    
 loop('rot_proj',cc.rot_proj)
 loop('proj',cc.projection)
 loop('slice',cc.slice)
