@@ -47,3 +47,9 @@ def load(filename):
     return data
             
     
+def quickstats(out_dict):
+    import numpy as n
+    for key in out_dict:
+        array = n.array(out_dict[key])
+        outstring = 'Time {} Total {} ms Average {} ms +/- {} ms\n'.format(key,n.sum(array),n.mean(array),n.std(array))
+        print(outstring)
