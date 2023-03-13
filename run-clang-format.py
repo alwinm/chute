@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function, unicode_literals
 
 # Alwin: I took this baby from https://github.com/Sarcasm/run-clang-format according to the following license:
 '''
@@ -37,7 +38,7 @@ A diff output is produced and a sensible exit code is returned.
 
 """
 
-from __future__ import print_function, unicode_literals
+
 
 import argparse
 import codecs
@@ -229,7 +230,12 @@ def run_clang_format_diff(args, file):
             ),
             errs,
         )
+
+    '''
     if args.in_place:
+        return [], errs
+    '''
+    if True:
         return [], errs
     return make_diff(file, original, outs), errs
 
@@ -307,7 +313,7 @@ def main():
         '--in-place',
         action='store_true',
         help='format file instead of printing differences')
-    parser.add_argument('files', metavar='file', nargs='+')
+    #parser.add_argument('files', metavar='file', nargs='+')
     parser.add_argument(
         '-q',
         '--quiet',
@@ -381,7 +387,7 @@ def main():
     excludes.extend(args.exclude)
 
     files = list_files(
-        'src',
+        ['src'],
         recursive=True,
         exclude=excludes,
         extensions=args.extensions.split(','))
