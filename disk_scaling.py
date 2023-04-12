@@ -31,7 +31,7 @@ def sanity_check(run):
 
 #list(map(sanity_check,runs))
 
-def make_sbatch_command(account, nodes, time, wrap, mail_user = None):
+def make_sbatch_command(account, time, nodes, wrap, mail_user = None):
     if mail_user:
         mail = f'--mail-user={mail_user} --mail-type=BEGIN,END'
     else:
@@ -74,3 +74,12 @@ def make_cholla_command(executable, input_file, run, srun=False):
     )
 
     return command
+
+def submit_job(account, time, executable, input_file, run, mail_user=None, srun=False, submit=False):
+    wrap = make_cholla_command(executable, input_file, run, srun=srun)
+    command = make_sbatch_command(account, time, nodes, wrap, mail_user=mail_user)
+    print(command)
+    if submit:
+        os.system(command)
+    return command
+    
