@@ -11,6 +11,8 @@ time.t0 = time.time()
 OKCYAN = '\033[96m'
 ENDC = '\033[0m'
 
+restart_mode = False
+
 
 def timer(string):
     print(string,time.time() - time.t0,' seconds')
@@ -106,10 +108,6 @@ def compile_cholla():
         os.system('make -j TYPE={}'.format(typename))
         os.system('mv bin/* temp/.')
 
-    #os.system('make clean')
-    #os.system('make -j TYPE=nompi')
-    #os.system('mv bin/* temp/.')
-
 tests1d = [
 ['/1D/Creasey_shock.txt','tout=30.0 outstep=30.0','creasey'],
 ['/1D/sod.txt','','sod1'],
@@ -135,12 +133,18 @@ tests3d = [
 ]
 tests = tests1d + tests2d + tests3d
 
+
+    
+
 def run_test(binary,odir,test):
     pdir = 'examples'
     outdir = f'{odir}/{test[2]}/'
     if not os.path.isdir(outdir):
         os.system('mkdir -p ' + outdir)
     command = f'{binary} {pdir}{test[0]} {test[1]} outdir={odir}/{test[2]}/'
+
+    if restart_mode:
+        command += f' init=Read_Grid nfile=0 indir={odir}/{test[2]}/'
 
     printf(command)
     os.system(command)
@@ -167,16 +171,6 @@ def run_tests():
 
     bins = os.listdir('temp')
 
-    # 1 gpu nompi
-    '''
-    nompi_match = [string for string in bins if 'nompi' in string]
-    if not nompi_match:
-        return
-    for test in tests:
-        run_test(f'temp/{nompi_match[0]}','out_nompi',test)
-    '''
-
-    # 1 gpu ctu
     for typename in ['ctu','simple','nompi']:
         match = [string for string in bins if typename in string]
         if not match:
@@ -307,6 +301,11 @@ if 'compile' in sys.argv:
     exit()
 
 if 'run' in sys.argv:
+    run_tests()
+    exit()
+
+if 'restart' in sys.argv:
+    restart_mode = True
     run_tests()
     exit()
 
