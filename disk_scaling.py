@@ -73,10 +73,11 @@ def make_cholla_command(executable, input_file, run, srun=False):
         ]
     )
 
-    return command
+    return command, nodes
 
 def submit_job(account, time, executable, input_file, run, mail_user=None, srun=False, submit=False):
-    wrap = make_cholla_command(executable, input_file, run, srun=srun)
+    
+    wrap, nodes = make_cholla_command(executable, input_file, run, srun=srun)
     command = make_sbatch_command(account, time, nodes, wrap, mail_user=mail_user)
     print(command)
     if submit:
