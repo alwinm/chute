@@ -27,6 +27,15 @@ def parse(argv):
   return dnamein,dnameout
 
 def hydro(n,dnamein,dnameout,double=True):
+  """
+  n: integer, output number of file
+  dnamein: string, directory name of input files, should include '/' at end or leave blank for current directory
+  dnameout: string, directory name of output files, should include '/' at end or leave blank for current directory
+  double: optional bool, double precision (float64) if True, single precision (float32) if False
+
+  Reads files of form dnamein{n}.h5.{rank}, looping over rank, outputting to file dnameout{n}.h5.
+  """
+  
   fileout = h5py.File(dnameout+str(n)+'.h5', 'a')
 
   i = -1
@@ -106,6 +115,15 @@ y_unit']
 
 
 def projection(n,dnamein,dnameout):
+  """
+  n: integer, output number of file
+  dnamein: string, directory name of input files, should include '/' at end or leave blank for current directory
+  dnameout: string, directory name of output files, should include '/' at end or leave blank for current directory
+  double: optional bool, double precision (float64) if True, single precision (float32) if False
+
+  Reads files of form dnamein{n}.h5.{rank}, looping over rank, outputting to file dnameout{n}.h5.
+  """
+  
   # open the output file for writing
   fileout = h5py.File(dnameout+str(n)+'_proj.h5', 'w')
   i = -1
@@ -167,6 +185,15 @@ def projection(n,dnamein,dnameout):
   return
 
 def slice(n,dnamein,dnameout):
+  """
+  n: integer, output number of file
+  dnamein: string, directory name of input files, should include '/' at end or leave blank for current directory
+  dnameout: string, directory name of output files, should include '/' at end or leave blank for current directory
+  double: optional bool, double precision (float64) if True, single precision (float32) if False
+
+  Reads files of form dnamein{n}_slice.h5.{rank}, looping over rank, outputting to file dnameout{n}_slice.h5.
+  """
+  
   # open the output file for writing
   fileout = h5py.File(dnameout+str(n)+'_slice.h5', 'w')
 
@@ -294,6 +321,15 @@ def slice(n,dnamein,dnameout):
   return
 
 def rot_proj(n,dnamein,dnameout):
+  """
+  n: integer, output number of file
+  dnamein: string, directory name of input files, should include '/' at end or leave blank for current directory
+  dnameout: string, directory name of output files, should include '/' at end or leave blank for current directory
+  double: optional bool, double precision (float64) if True, single precision (float32) if False
+
+  Reads files of form dnamein{n}_rot_proj.h5.{rank}, looping over rank, outputting to file dnameout{n}_rot_proj.h5.
+  """
+  
   fileout = h5py.File(dnameout+str(n)+'_rot_proj.h5', 'w')
   i = -1
   
