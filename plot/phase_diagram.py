@@ -1,4 +1,5 @@
 import numpy as n
+import matplotlib.colors as mco
 import pylab as p
 import h5py
 
@@ -71,11 +72,12 @@ def calc_histogram(x, y):
     bins0 = [arr_to_bin_edges(x), arr_to_bin_edges(y)]
     return n.histogram2d(x.reshape(-1), y.reshape(-1), bins=bins0)
 
-def make_phase_diagram(filename, cloudy_path):
+def make_phase_diagram(filename, cloudy_path, vmin=None, vmax=None, norm=None):
     log_n, log_T = calc_log_n_T(filename)
     counts, x_edges, y_edges = calc_histogram(log_n, log_T)
 
-    p.pcolormesh(x,y,z.transpose(),shading='flat')
+    
+    p.pcolormesh(x_edges,y_edges,counts.transpose(),shading='flat', norm=norm, vmin=vmin, vmax=vmax)
     
     equilibrium_line(cloudy_path)
     
