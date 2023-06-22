@@ -106,9 +106,6 @@ def compile_cholla():
         os.system('make -j TYPE={}'.format(typename))
         os.system('mv bin/* temp/.')
 
-    #os.system('make clean')
-    #os.system('make -j TYPE=nompi')
-    #os.system('mv bin/* temp/.')
 
 tests1d = [
 ['/1D/Creasey_shock.txt','tout=30.0 outstep=30.0','creasey'],
@@ -168,13 +165,13 @@ def run_tests():
     bins = os.listdir('temp')
 
     # 1 gpu nompi
-    '''
+
     nompi_match = [string for string in bins if 'nompi' in string]
     if not nompi_match:
         return
     for test in tests:
         run_test(f'temp/{nompi_match[0]}','out_nompi',test)
-    '''
+
 
     # 1 gpu ctu
     for typename in ['ctu','simple','nompi']:
