@@ -13,7 +13,9 @@ def plot(i,log_bool=True,field='d',slicedir='./',projdir='./'):
         if log_bool:
             norm0 = mco.LogNorm()
 
-        vmax = n.max(array)
+
+        vmax = 10**n.ceil(n.log10(n.max(array)))
+        #vmax = n.max(array)
         vmin = 1e-10 * vmax
         p.pcolormesh(array.transpose(),norm=norm0,vmin=vmin,vmax=vmax) 
         p.colorbar()
@@ -75,6 +77,10 @@ def plot(i,log_bool=True,field='d',slicedir='./',projdir='./'):
     p.xlabel('X')
     p.ylabel('Z')
 
+    p.subplot(nh,nw,ni)
+    ni += 1
+    p.title(str(i))
+    
     if not os.path.isdir('aurora'):
         os.mkdir('aurora')
     
