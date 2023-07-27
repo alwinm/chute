@@ -25,7 +25,7 @@ def threeview(array,nh,nw,ni, function=n.sum, norm=None):
 # Sum density
 # Sum mask
 
-def plot(i, griddir='./grid/'):
+def plot(i, griddir='./grid/', cut_t=1e3, cut_n=1):
     gridfile = griddir + str(i) + '.h5'
     outdir = './jericho/'
     if not os.path.isdir(outdir):
@@ -45,7 +45,7 @@ def plot(i, griddir='./grid/'):
     #solar mass / (kpc)^3 / proton mass in cm^-3                                
     n_cgs = density * (to_pcc / mu)
 
-    mask = (temperature < 1e3) * (n_cgs < 1.0)
+    mask = (temperature < cut_t) * (n_cgs < cut_n)
 
     p.figure(figsize=(8,8))
     nh = 3
