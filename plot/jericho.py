@@ -4,7 +4,8 @@ import h5py
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.colors as mco
-import pylab as p
+import pylab
+p = pylab
 
 def threeview(array,nh,nw,ni, function=n.sum):
     dims = ['X','Y','Z']
