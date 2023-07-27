@@ -60,6 +60,6 @@ def plot(i, griddir='./grid/'):
 
 
 
-    savefile = outdir + 'jericho_{i:03d}.png'
+    savefile = f'{outdir}jericho_{i:03d}.png'
     print('Saving:', savefile)    
     p.savefig(savefile)
