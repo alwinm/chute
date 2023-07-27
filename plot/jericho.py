@@ -7,11 +7,11 @@ import matplotlib.colors as mco
 import pylab
 p = pylab
 
-def threeview(array,nh,nw,ni, function=n.sum):
+def threeview(array,nh,nw,ni, function=n.sum, norm=None):
     dims = ['X','Y','Z']
     for i in range(3):
         pylab.subplot(nh,nw,ni+i,aspect='equal')
-        pylab.pcolormesh(n.sum(array, axis=i).transpose(),norm=mco.LogNorm())
+        pylab.pcolormesh(n.sum(array, axis=i).transpose(),norm=norm)
         pylab.colorbar()
         labels = list(range(3))
         labels.remove(i)
@@ -50,8 +50,8 @@ def plot(i, griddir='./grid/'):
     p.figure(figsize=(8,8))
     nh = 3
     nw = 3
-    threeview(n_cgs, nh, nw, 1, function = n.max)
-    threeview(n_cgs, nh, nw, 4)
+    threeview(n_cgs, nh, nw, 1, function = n.max, norm=mco.LogNorm())
+    threeview(n_cgs, nh, nw, 4, norm=mco.LogNorm())
     threeview(mask , nh, nw, 7)
     
     p.tight_layout()
