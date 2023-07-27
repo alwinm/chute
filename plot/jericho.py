@@ -11,7 +11,7 @@ def threeview(array,nh,nw,ni, function=n.sum, norm=None):
     dims = ['X','Y','Z']
     for i in range(3):
         pylab.subplot(nh,nw,ni+i,aspect='equal')
-        pylab.pcolormesh(n.sum(array, axis=i).transpose(),norm=norm)
+        pylab.pcolormesh(function(array, axis=i).transpose(),norm=norm)
         pylab.colorbar()
         labels = list(range(3))
         labels.remove(i)
